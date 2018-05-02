@@ -1,10 +1,12 @@
 package com.ferris.json
 
+import java.time.LocalDate
 import java.util.UUID
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.DateTime
 import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsValue, RootJsonFormat}
+
+import scala.util.Try
 
 trait FerrisJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object UUIDFormat extends RootJsonFormat[UUID] {
@@ -18,12 +20,12 @@ trait FerrisJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     }
   }
 
-  implicit object DateFormat extends RootJsonFormat[DateTime] {
-    override def write(obj: DateTime): JsValue = JsString(obj.toString)
-    override def read(value: JsValue): DateTime = {
+  implicit object LocalDateFormat extends RootJsonFormat[LocalDate] {
+    override def write(obj: LocalDate): JsValue = JsString(obj.toString)
+    override def read(value: JsValue): LocalDate = {
       def exception(actual: String) = DeserializationException(s"Expected an ISO formatted date as JsString, but got $actual")
       value match {
-        case JsString(str) => DateTime.fromIsoDateTimeString(str).getOrElse(throw exception(str))
+        case JsString(str) => Try(LocalDate.parse(str)).getOrElse(throw exception(str))
         case other => throw exception(other.toString)
       }
     }
